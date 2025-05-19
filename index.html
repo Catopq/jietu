@@ -2,18 +2,22 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✨ 像素块分割合成器</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>拼好图创作工具</title>
     <style>
         :root {
-            --primary: #00b894;
-            --primary-dark: #009d7a;
-            --secondary: #0984e3;
-            --light: #f8f9fa;
-            --dark: #2d3436;
-            --gray: #636e72;
-            --border: #dfe6e9;
-            --shadow: 0 4px 20px rgba(0,0,0,0.1);
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --secondary-color: #2ecc71;
+            --secondary-hover: #27ae60;
+            --invert-color: #9b59b6;
+            --invert-hover: #8e44ad;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #7f8c8d;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+            --border-radius: 8px;
         }
         
         * {
@@ -23,475 +27,618 @@
         }
         
         body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #f5f6fa;
-            color: var(--dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+            color: var(--text-color);
+            background-color: var(--light-gray);
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
         
         h1 {
-            color: var(--primary);
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            font-weight: 600;
+            color: #2c3e50;
+            text-align: center;
+            margin: 15px 0;
+            font-size: clamp(1.5rem, 5vw, 2.2rem);
         }
         
-        .subtitle {
-            color: var(--gray);
-            font-size: 1.1rem;
-            max-width: 700px;
-            margin: 0 auto 30px;
+        p.description {
+            text-align: center;
+            color: var(--dark-gray);
+            margin-bottom: 20px;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
         }
         
-        .card {
-            background: white;
-            border-radius: 12px;
+        .upload-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
             box-shadow: var(--shadow);
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .tool-box {
+            margin-bottom: 20px;
             text-align: center;
-        }
-        
-        .btn-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin: 25px 0;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 28px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
+            border: 2px dashed var(--medium-gray);
             transition: all 0.3s ease;
-            border: none;
-            outline: none;
         }
         
-        .btn-primary {
-            background: var(--primary);
-            color: white;
+        .upload-container:hover {
+            border-color: var(--primary-color);
         }
         
-        .btn-primary:hover {
-            background: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 184, 148, 0.3);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-        }
-        
-        .btn-outline:hover {
-            background: var(--primary);
-            color: white;
-        }
-        
-        #fileInput {
+        #original-image {
+            max-width: 100%;
+            max-height: 50vh;
+            margin: 15px auto;
+            border-radius: calc(var(--border-radius) - 2px);
+            box-shadow: var(--shadow);
             display: none;
+            object-fit: contain;
         }
         
-        .progress-container {
-            width: 100%;
-            height: 24px;
-            background: #e0e0e0;
-            border-radius: 12px;
-            overflow: hidden;
-            margin: 25px 0;
-            display: none;
-        }
-        
-        #progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), #55efc4);
-            width: 0%;
-            transition: width 0.4s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        
-        .section-title {
-            text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary);
-            font-size: 1.6rem;
-            font-weight: 600;
-            position: relative;
-            padding-bottom: 10px;
-        }
-        
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: var(--primary);
-        }
-        
-        .grid {
+        .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+            display: none;
         }
         
         .grid-item {
-            background: white;
-            border-radius: 10px;
+            border: 1px solid var(--medium-gray);
             overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            position: relative;
+            background: repeating-conic-gradient(#f0f0f0 0% 25%, white 0% 50%) 50%/20px 20px;
+            border-radius: calc(var(--border-radius) - 2px);
+            transition: transform 0.3s ease;
+            aspect-ratio: 1/1;
         }
         
         .grid-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
         }
         
         .grid-item img {
             width: 100%;
-            height: auto;
+            height: 100%;
+            object-fit: cover;
             display: block;
         }
         
-        .grid-item .label {
-            padding: 12px;
+        .grid-item::after {
+            content: attr(data-part);
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            min-width: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1 1 auto;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        button.download {
+            background-color: var(--secondary-color);
+        }
+        
+        button.download:hover {
+            background-color: var(--secondary-hover);
+        }
+        
+        button.invert {
+            background-color: var(--invert-color);
+        }
+        
+        button.invert:hover {
+            background-color: var(--invert-hover);
+        }
+        
+        .preview-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            margin: 20px 0;
             text-align: center;
-            font-size: 14px;
-            color: var(--gray);
-            border-top: 1px solid var(--border);
         }
         
-        #combined-img {
+        .preview-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        
+        #combined-preview, #inverted-preview {
             max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 0 25px rgba(0,0,0,0.1);
-            display: block;
-            margin: 20px auto;
+            max-height: 50vh;
+            display: none;
+            margin-top: 12px;
+            border-radius: calc(var(--border-radius) - 2px);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--medium-gray);
+            object-fit: contain;
         }
         
-        .info-box {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 18px;
-            margin-top: 25px;
-            font-size: 14px;
-            color: var(--gray);
-            border-left: 4px solid var(--primary);
+        .info-text {
+            margin: 12px 0;
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+            text-align: center;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
         }
         
         .icon {
-            margin-right: 8px;
+            width: 18px;
+            height: 18px;
         }
         
+        /* 移动设备优化 */
         @media (max-width: 768px) {
-            .btn-group {
-                flex-direction: column;
+            body {
+                padding: 10px;
             }
             
-            .btn {
-                width: 100%;
+            .upload-container {
+                padding: 15px;
             }
             
-            .grid {
-                grid-template-columns: 1fr;
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
             
-            .card {
-                padding: 20px;
+            button {
+                padding: 10px 15px;
+                font-size: 0.9rem;
+                min-width: 120px;
             }
             
-            h1 {
-                font-size: 1.8rem;
+            .preview-container {
+                padding: 15px;
             }
+        }
+        
+        /* 平板优化 */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .grid-container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        /* 状态指示 */
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            font-style: italic;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>✨ 像素块分割合成器</h1>
-            <p class="subtitle">将任何图片智能分割为9张像素块图，每张包含约1000个像素块，可完美还原原图</p>
-        </header>
-        
-        <div class="card tool-box">
-            <input type="file" id="fileInput" accept="image/*">
-            <div class="btn-group">
-                <label for="fileInput" class="btn btn-primary">
-                    <span class="icon">📁</span> 选择图片
-                </label>
-                <button onclick="processImage()" class="btn btn-primary">
-                    <span class="icon">✂️</span> 开始分割
-                </button>
-            </div>
-            
-            <div class="progress-container" id="progressContainer">
-                <div id="progress-bar">0%</div>
-            </div>
-            
-            <div class="info-box">
-                <p><strong>使用说明：</strong>上传图片后点击"开始分割"按钮，系统会将图片分割为9部分，每部分包含约1000个像素块。处理完成后可下载所有分割图片。</p>
-            </div>
-        </div>
-        
-        <div class="card" id="resultSection" style="display:none;">
-            <h2 class="section-title">分割结果</h2>
-            <div class="grid" id="gridContainer"></div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-                <button onclick="downloadAllImages()" class="btn btn-outline">
-                    <span class="icon">⏬</span> 一键下载全部 (9张)
-                </button>
-            </div>
-        </div>
-        
-        <div class="card" id="combinedSection" style="display:none;">
-            <h2 class="section-title">合成验证</h2>
-            <img id="combined-img" src="" alt="合成图片">
-            <p style="text-align: center; color: var(--gray); margin-top: 15px;">9张分割图片可完美拼合成原始图片</p>
-        </div>
+    <h1>反差色像素块分割器</h1>
+    <p class="description">上传图片，生成反差色像素块分割图</p>
+    
+    <div class="upload-container">
+        <input type="file" id="image-upload" accept="image/*" style="display: none;">
+        <label for="image-upload" style="cursor: pointer; display: inline-block; padding: 10px 15px; background: var(--primary-color); color: white; border-radius: var(--border-radius); transition: all 0.3s ease;">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            点击上传图片
+        </label>
+        <div class="info-text">上传图片后立即处理，如果否请刷新重新上传！</div>
+        <div id="status" class="status"></div>
     </div>
-
+    
+    <img id="original-image" alt="原始图片">
+    
+    <div id="grid-container" class="grid-container"></div>
+    
+    <div class="button-group">
+        <button id="invert-btn" class="invert" disabled>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+            生成反差色版本
+        </button>
+        <button id="download-all" class="download" disabled>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            下载全部分割图
+        </button>
+    </div>
+    
+    <div class="preview-container">
+        <div class="preview-title">反差色效果预览</div>
+        <img id="inverted-preview" alt="反差色预览">
+    </div>
+    
     <script>
-        const gridContainer = document.getElementById('gridContainer');
-        const combinedImg = document.getElementById('combined-img');
-        const progressContainer = document.getElementById('progressContainer');
-        const progressBar = document.getElementById('progress-bar');
-        const resultSection = document.getElementById('resultSection');
-        const combinedSection = document.getElementById('combinedSection');
-        let originalImage = null;
-        let processedImages = [];
-        const BLOCK_SIZE = 10; // 单个像素块大小（px）
-        const TARGET_BLOCKS = 1000; // 每张图片目标块数量
-        let blocksPerPart = 0;
-        let totalBlocks = 0;
-
-        function processImage() {
-            const file = document.getElementById('fileInput').files[0];
-            if (!file) return alert('请先选择图片');
-            
-            // 重置状态
-            processedImages = [];
-            gridContainer.innerHTML = '';
-            combinedImg.src = '';
-            resultSection.style.display = 'none';
-            combinedSection.style.display = 'none';
-            
-            progressContainer.style.display = 'block';
-            progressBar.style.width = '0%';
-            progressBar.textContent = '0%';
-
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                originalImage = new Image();
-                originalImage.onload = () => {
-                    splitImageIntoBlocks(originalImage);
-                };
-                originalImage.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function splitImageIntoBlocks(img) {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-
-            const totalWidth = Math.ceil(img.width / BLOCK_SIZE);
-            const totalHeight = Math.ceil(img.height / BLOCK_SIZE);
-            totalBlocks = totalWidth * totalHeight;
-            blocksPerPart = Math.ceil(totalBlocks / 9);
-
-            const allBlocks = Array.from({ length: totalBlocks }, (v, i) => i);
-            shuffle(allBlocks);
-
-            const parts = Array.from({ length: 9 }, () => []);
-            allBlocks.forEach((block, i) => {
-                parts[i % 9].push(block);
-            });
-
-            generatePartImages(parts, img.width, img.height, ctx);
-        }
-
-        function generatePartImages(parts, imgWidth, imgHeight, originalCtx) {
-            let processedParts = 0;
-            const totalParts = parts.length;
-
-            parts.forEach((blockIndices, partIndex) => {
-                setTimeout(() => {
-                    const partCanvas = document.createElement('canvas');
-                    partCanvas.width = imgWidth;
-                    partCanvas.height = imgHeight;
-                    const ctx = partCanvas.getContext('2d');
-                    ctx.fillStyle = '#fff';
-                    ctx.fillRect(0, 0, imgWidth, imgHeight);
-
-                    blockIndices.forEach((blockIndex) => {
-                        const x = (blockIndex % Math.ceil(imgWidth / BLOCK_SIZE)) * BLOCK_SIZE;
-                        const y = Math.floor(blockIndex / Math.ceil(imgWidth / BLOCK_SIZE)) * BLOCK_SIZE;
-                        const imgData = originalCtx.getImageData(x, y, BLOCK_SIZE, BLOCK_SIZE);
-                        ctx.putImageData(imgData, x, y);
-                    });
-
-                    const imgDataUrl = partCanvas.toDataURL('image/png');
-                    processedImages.push(imgDataUrl);
-                    
-                    // 创建预览元素
-                    const gridItem = document.createElement('div');
-                    gridItem.className = 'grid-item';
-                    
-                    const img = document.createElement('img');
-                    img.src = imgDataUrl;
-                    img.onclick = () => previewLarge(img.src);
-                    
-                    const label = document.createElement('div');
-                    label.className = 'label';
-                    label.textContent = `分割图 ${partIndex + 1}`;
-                    
-                    gridItem.appendChild(img);
-                    gridItem.appendChild(label);
-                    gridContainer.appendChild(gridItem);
-
-                    processedParts++;
-                    const progress = Math.round((processedParts / totalParts) * 100);
-                    progressBar.style.width = `${progress}%`;
-                    progressBar.textContent = `${progress}%`;
-
-                    if (processedParts === totalParts) {
-                        combineImages(imgWidth, imgHeight, originalCtx);
-                        resultSection.style.display = 'block';
-                    }
-                }, 0);
-            });
-        }
-
-        function combineImages(imgWidth, imgHeight, originalCtx) {
-            const combineCanvas = document.createElement('canvas');
-            combineCanvas.width = imgWidth;
-            combineCanvas.height = imgHeight;
-            const ctx = combineCanvas.getContext('2d');
-            ctx.drawImage(originalImage, 0, 0);
-
-            combinedImg.src = combineCanvas.toDataURL();
-            
-            // 完成进度条
-            progressBar.style.width = '100%';
-            progressBar.textContent = '100%';
+        // 配置
+        const PART_COUNT = 9;      // 分割图数量
+        const BLOCK_SIZE = 16;     // 固定像素块大小(16x16)
+        const RANDOMNESS = 10;     // 固定随机程度(最高)
+        
+        // 获取DOM元素
+        const upload = document.getElementById('image-upload');
+        const originalImage = document.getElementById('original-image');
+        const gridContainer = document.getElementById('grid-container');
+        const invertBtn = document.getElementById('invert-btn');
+        const downloadBtn = document.getElementById('download-all');
+        const invertedPreview = document.getElementById('inverted-preview');
+        const statusEl = document.getElementById('status');
+        
+        let state = {
+            originalImageData: null,
+            splitImages: [],
+            invertedSplitImages: [], // 存储反差色分割图
+            width: 0,
+            height: 0,
+            pixelMap: null,
+            isInverted: false       // 当前是否为反差色模式
+        };
+        
+        // 初始化事件监听
+        upload.addEventListener('change', handleImageUpload);
+        invertBtn.addEventListener('click', toggleInvertedVersion);
+        downloadBtn.addEventListener('click', downloadAllImages);
+        
+        // 更新状态显示
+        function updateStatus(message) {
+            statusEl.textContent = message;
             setTimeout(() => {
-                progressContainer.style.display = 'none';
-                combinedSection.style.display = 'block';
-            }, 500);
+                if (statusEl.textContent === message) {
+                    statusEl.textContent = '';
+                }
+            }, 3000);
         }
-
-        function downloadAllImages() {
-            if (processedImages.length === 0) {
-                alert('没有可下载的图片，请先处理图片');
-                return;
-            }
-            
-            // 创建ZIP下载
-            if (typeof JSZip === 'undefined') {
-                // 如果JSZip不可用，逐个下载
-                alert('开始下载所有图片...');
-                processedImages.forEach((imgData, index) => {
-                    setTimeout(() => {
-                        const link = document.createElement('a');
-                        link.href = imgData;
-                        link.download = `pixel-part-${index + 1}.png`;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                    }, index * 300);
-                });
-            } else {
-                // 使用JSZip打包下载
-                const zip = new JSZip();
-                const imgFolder = zip.folder("pixel_parts");
+        
+        // 处理图片上传
+        function handleImageUpload(e) {
+            if (e.target.files && e.target.files[0]) {
+                updateStatus("正在处理图片...");
                 
-                processedImages.forEach((imgData, index) => {
-                    const base64Data = imgData.split(',')[1];
-                    imgFolder.file(`pixel-part-${index + 1}.png`, base64Data, {base64: true});
-                });
+                const reader = new FileReader();
                 
-                zip.generateAsync({type:"blob"}).then(function(content) {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(content);
-                    link.download = "pixel-parts.zip";
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                });
+                reader.onload = function(event) {
+                    originalImage.src = event.target.result;
+                    originalImage.style.display = 'block';
+                    
+                    // 处理图片
+                    processImage();
+                };
+                
+                reader.onerror = function() {
+                    updateStatus("图片加载失败，请重试");
+                };
+                
+                reader.readAsDataURL(e.target.files[0]);
             }
         }
-
-        function previewLarge(src) {
-            const overlay = document.createElement('div');
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0,0,0,0.9)';
-            overlay.style.zIndex = '1000';
-            overlay.style.display = 'flex';
-            overlay.style.justifyContent = 'center';
-            overlay.style.alignItems = 'center';
-            overlay.style.cursor = 'zoom-out';
-            overlay.onclick = () => document.body.removeChild(overlay);
-            
+        
+        // 处理图片
+        function processImage() {
             const img = new Image();
-            img.src = src;
-            img.style.maxWidth = '90%';
-            img.style.maxHeight = '90%';
-            img.style.borderRadius = '8px';
-            img.style.objectFit = 'contain';
             
-            overlay.appendChild(img);
-            document.body.appendChild(overlay);
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                // 设置画布大小
+                state.width = canvas.width = img.width;
+                state.height = canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                
+                // 获取图像数据
+                state.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                
+                // 清空之前的结果
+                gridContainer.innerHTML = '';
+                state.splitImages = [];
+                state.invertedSplitImages = [];
+                state.isInverted = false;
+                invertedPreview.style.display = 'none';
+                invertBtn.disabled = false;
+                downloadBtn.disabled = false;
+                
+                // 初始化像素分配记录
+                state.pixelMap = new Array(state.width * state.height);
+                for (let i = 0; i < state.pixelMap.length; i++) {
+                    state.pixelMap[i] = -1; // -1表示未分配
+                }
+                
+                // 计算水平和垂直方向能容纳的块数
+                const blocksWide = Math.ceil(state.width / BLOCK_SIZE);
+                const blocksHigh = Math.ceil(state.height / BLOCK_SIZE);
+                const totalBlocks = blocksWide * blocksHigh;
+                
+                // 创建所有块位置的数组并随机排序
+                const allBlockPositions = [];
+                for (let by = 0; by < blocksHigh; by++) {
+                    for (let bx = 0; bx < blocksWide; bx++) {
+                        allBlockPositions.push({bx, by});
+                    }
+                }
+                
+                // 多重随机打乱以增强随机性
+                for (let i = 0; i < RANDOMNESS; i++) {
+                    shuffleArray(allBlockPositions);
+                }
+                
+                // 创建分割图像
+                for (let partIndex = 0; partIndex < PART_COUNT; partIndex++) {
+                    // 创建正常和反差色的图像数据
+                    const imageData = new ImageData(state.width, state.height);
+                    const invertedImageData = new ImageData(state.width, state.height);
+                    const data = imageData.data;
+                    const invertedData = invertedImageData.data;
+                    
+                    // 初始化全透明
+                    for (let j = 0; j < data.length; j++) {
+                        data[j] = 0;
+                        invertedData[j] = 0;
+                    }
+                    
+                    // 计算这个分割图应该包含的块数量
+                    const blocksPerPart = Math.ceil(totalBlocks / PART_COUNT);
+                    let blocksAssigned = 0;
+                    
+                    // 分配块到这个分割图
+                    for (let i = 0; i < allBlockPositions.length && blocksAssigned < blocksPerPart; i++) {
+                        const {bx, by} = allBlockPositions[i];
+                        const blockIndex = by * blocksWide + bx;
+                        
+                        // 如果这个块还没有被分配
+                        if (state.pixelMap[blockIndex] === -1) {
+                            // 计算块的起始像素位置
+                            const startX = bx * BLOCK_SIZE;
+                            const startY = by * BLOCK_SIZE;
+                            
+                            // 复制这个块的所有像素
+                            for (let y = 0; y < BLOCK_SIZE; y++) {
+                                for (let x = 0; x < BLOCK_SIZE; x++) {
+                                    const px = startX + x;
+                                    const py = startY + y;
+                                    
+                                    if (px < state.width && py < state.height) {
+                                        const srcPos = (py * state.width + px) * 4;
+                                        const destPos = srcPos;
+                                        
+                                        // 正常像素
+                                        data[destPos] = state.originalImageData.data[srcPos];
+                                        data[destPos + 1] = state.originalImageData.data[srcPos + 1];
+                                        data[destPos + 2] = state.originalImageData.data[srcPos + 2];
+                                        data[destPos + 3] = state.originalImageData.data[srcPos + 3];
+                                        
+                                        // 反差色像素
+                                        invertedData[destPos] = 255 - state.originalImageData.data[srcPos];
+                                        invertedData[destPos + 1] = 255 - state.originalImageData.data[srcPos + 1];
+                                        invertedData[destPos + 2] = 255 - state.originalImageData.data[srcPos + 2];
+                                        invertedData[destPos + 3] = state.originalImageData.data[srcPos + 3];
+                                    }
+                                }
+                            }
+                            
+                            // 记录这个块被分配到当前分割图
+                            state.pixelMap[blockIndex] = partIndex;
+                            blocksAssigned++;
+                        }
+                    }
+                    
+                    // 保存分割图像
+                    ctx.putImageData(imageData, 0, 0);
+                    state.splitImages.push(imageData);
+                    state.invertedSplitImages.push(invertedImageData);
+                    
+                    // 创建缩略图显示（默认显示正常版本）
+                    createThumbnail(canvas, partIndex + 1, false);
+                }
+                
+                // 显示网格
+                gridContainer.style.display = 'grid';
+                updateStatus("图片处理完成！");
+                
+                // 生成并显示反差色预览
+                generateInvertedPreview();
+            };
+            
+            img.onerror = function() {
+                updateStatus("图片加载失败，请重试");
+            };
+            
+            img.src = originalImage.src;
         }
-
-        function shuffle(array) {
+        
+        // 切换反差色版本
+        function toggleInvertedVersion() {
+            state.isInverted = !state.isInverted;
+            
+            // 清空网格
+            gridContainer.innerHTML = '';
+            
+            // 重新创建缩略图
+            const canvas = document.createElement('canvas');
+            canvas.width = state.width;
+            canvas.height = state.height;
+            const ctx = canvas.getContext('2d');
+            
+            for (let i = 0; i < PART_COUNT; i++) {
+                if (state.isInverted) {
+                    ctx.putImageData(state.invertedSplitImages[i], 0, 0);
+                } else {
+                    ctx.putImageData(state.splitImages[i], 0, 0);
+                }
+                createThumbnail(canvas, i + 1, state.isInverted);
+            }
+            
+            // 更新按钮文本
+            invertBtn.innerHTML = `
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+                ${state.isInverted ? '恢复原始版本' : '生成反差色版本'}
+            `;
+            
+            updateStatus(`已切换到${state.isInverted ? '反差色' : '原始'}版本`);
+        }
+        
+        // 生成反差色预览
+        function generateInvertedPreview() {
+            const canvas = document.createElement('canvas');
+            canvas.width = state.width;
+            canvas.height = state.height;
+            const ctx = canvas.getContext('2d');
+            
+            // 创建反差色图像数据
+            const invertedImageData = new ImageData(state.width, state.height);
+            const invertedData = invertedImageData.data;
+            const originalData = state.originalImageData.data;
+            
+            // 生成反差色图像
+            for (let i = 0; i < originalData.length; i += 4) {
+                invertedData[i] = 255 - originalData[i];     // R
+                invertedData[i + 1] = 255 - originalData[i + 1]; // G
+                invertedData[i + 2] = 255 - originalData[i + 2]; // B
+                invertedData[i + 3] = originalData[i + 3];   // A
+            }
+            
+            // 绘制反差色图像
+            ctx.putImageData(invertedImageData, 0, 0);
+            invertedPreview.src = canvas.toDataURL('image/png');
+            invertedPreview.style.display = 'block';
+        }
+        
+        // 随机打乱数组
+        function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [array[i], array[j]] = [array[j], array[i]];
             }
             return array;
         }
+        
+        // 创建缩略图
+        function createThumbnail(sourceCanvas, partNumber, isInverted) {
+            const thumbCanvas = document.createElement('canvas');
+            const thumbSize = 200;
+            thumbCanvas.width = thumbSize;
+            thumbCanvas.height = thumbSize * (sourceCanvas.height / sourceCanvas.width);
+            const thumbCtx = thumbCanvas.getContext('2d');
+            
+            thumbCtx.drawImage(sourceCanvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
+            
+            // 创建网格项并添加到容器
+            const gridItem = document.createElement('div');
+            gridItem.className = 'grid-item';
+            gridItem.dataset.part = `部分 ${partNumber}${isInverted ? ' (反差色)' : ''}`;
+            
+            const partImg = document.createElement('img');
+            partImg.src = thumbCanvas.toDataURL('image/png');
+            
+            gridItem.appendChild(partImg);
+            gridContainer.appendChild(gridItem);
+        }
+        
+        // 下载所有分割图片
+        function downloadAllImages() {
+            if (state.splitImages.length === 0) return;
+            
+            updateStatus("正在准备下载...");
+            
+            // 创建一个临时zip文件
+            const zip = new JSZip();
+            const folderName = state.isInverted ? "inverted_pixel_parts" : "pixel_parts";
+            const imgFolder = zip.folder(folderName);
+            
+            // 添加所有分割图到zip
+            const imagesToDownload = state.isInverted ? state.invertedSplitImages : state.splitImages;
+            
+            imagesToDownload.forEach((imageData, index) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = state.width;
+                canvas.height = state.height;
+                const ctx = canvas.getContext('2d');
+                ctx.putImageData(imageData, 0, 0);
+                
+                const dataUrl = canvas.toDataURL('image/png');
+                const base64Data = dataUrl.split(',')[1];
+                imgFolder.file(`${folderName}_${index + 1}.png`, base64Data, {base64: true});
+            });
+            
+            // 生成zip文件并下载
+            zip.generateAsync({type: "blob"})
+                .then(function(content) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(content);
+                    link.download = `${folderName}.zip`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    updateStatus("下载已开始！");
+                })
+                .catch(function(error) {
+                    updateStatus("下载失败，请重试");
+                    console.error("下载错误:", error);
+                });
+        }
+        
+        // 检测移动设备
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        }
+        
+        // 初始化移动设备特定设置
+        if (isMobileDevice()) {
+            document.body.classList.add('mobile-device');
+        }
     </script>
-
-    <!-- 加载JSZip库用于打包下载 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 引入JSZip库用于打包下载 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
 </body>
-          </html>
+</html>
