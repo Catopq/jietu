@@ -2,559 +2,380 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>拼好图创作工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拼好图-创作工具</title>
     <style>
-        :root {
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --secondary-color: #2ecc71;
-            --secondary-hover: #27ae60;
-            --invert-color: #9b59b6;
-            --invert-hover: #8e44ad;
-            --text-color: #333;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #7f8c8d;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
-            --border-radius: 8px;
-        }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--light-gray);
-            padding: 15px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-            margin: 15px 0;
-            font-size: clamp(1.5rem, 5vw, 2.2rem);
-        }
-        
-        p.description {
-            text-align: center;
-            color: var(--dark-gray);
-            margin-bottom: 20px;
-            font-size: clamp(0.9rem, 3vw, 1.1rem);
-        }
-        
-        .upload-container {
-            background-color: white;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
             text-align: center;
-            border: 2px dashed var(--medium-gray);
-            transition: all 0.3s ease;
+            color: #333;
         }
-        
-        .upload-container:hover {
-            border-color: var(--primary-color);
-        }
-        
-        #original-image {
-            max-width: 100%;
-            max-height: 50vh;
-            margin: 15px auto;
-            border-radius: calc(var(--border-radius) - 2px);
-            box-shadow: var(--shadow);
-            display: none;
-            object-fit: contain;
-        }
-        
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
             margin: 20px 0;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #imageUpload {
             display: none;
         }
-        
-        .grid-item {
-            border: 1px solid var(--medium-gray);
+        #originalImage {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+            margin: 0 auto;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #4285f4;
+            color: white;
+        }
+        .tiles-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .tile {
+            border: 1px solid #ddd;
+            border-radius: 5px;
             overflow: hidden;
-            position: relative;
-            background: repeating-conic-gradient(#f0f0f0 0% 25%, white 0% 50%) 50%/20px 20px;
-            border-radius: calc(var(--border-radius) - 2px);
-            transition: transform 0.3s ease;
-            aspect-ratio: 1/1;
+            background: #f0f0f0;
         }
-        
-        .grid-item:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow);
-        }
-        
-        .grid-item img {
+        .tile img {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: auto;
             display: block;
         }
-        
-        .grid-item::after {
-            content: attr(data-part);
-            position: absolute;
-            bottom: 6px;
-            right: 6px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 3px 6px;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            font-weight: bold;
+        .combined-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 20px auto;
+            border: 1px solid #ddd;
+            background: white;
         }
-        
-        .button-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 12px;
-            margin: 20px 0;
+        .combined-container img {
+            width: 100%;
+            height: auto;
+            display: block;
         }
-        
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            min-width: 160px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex: 1 1 auto;
-        }
-        
-        button:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-        
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        
-        button.download {
-            background-color: var(--secondary-color);
-        }
-        
-        button.download:hover {
-            background-color: var(--secondary-hover);
-        }
-        
-        button.invert {
-            background-color: var(--invert-color);
-        }
-        
-        button.invert:hover {
-            background-color: var(--invert-hover);
-        }
-        
-        .preview-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            margin: 20px 0;
-            text-align: center;
-        }
-        
-        .preview-title {
-            font-size: 1.2rem;
-            color: #2c3e50;
-            margin-bottom: 12px;
-            font-weight: 600;
-        }
-        
-        #combined-preview, #inverted-preview {
-            max-width: 100%;
-            max-height: 50vh;
-            display: none;
-            margin-top: 12px;
-            border-radius: calc(var(--border-radius) - 2px);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--medium-gray);
-            object-fit: contain;
-        }
-        
-        .info-text {
-            margin: 12px 0;
-            font-size: 0.85rem;
-            color: var(--dark-gray);
-            text-align: center;
-            padding: 8px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-        }
-        
-        .icon {
-            width: 18px;
-            height: 18px;
-        }
-        
-        /* 移动设备优化 */
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .upload-container {
-                padding: 15px;
-            }
-            
-            .grid-container {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-            
-            button {
-                padding: 10px 15px;
-                font-size: 0.9rem;
-                min-width: 120px;
-            }
-            
-            .preview-container {
-                padding: 15px;
-            }
-        }
-        
-        /* 平板优化 */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .grid-container {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        /* 状态指示 */
-        .status {
+        .pixel-size {
             text-align: center;
             margin: 10px 0;
-            font-size: 0.9rem;
-            color: var(--dark-gray);
+        }
+        .pixel-size input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+        }
+        .processing {
+            text-align: center;
+            color: #666;
             font-style: italic;
+            margin: 10px 0;
+            height: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>拼好图-创作拼图</h1>
-    <p class="description">上传图片，生成反差色像素块分割图</p>
+    <h1>像素分解工具</h1>
     
-    <div class="upload-container">
-        <input type="file" id="image-upload" accept="image/*" style="display: none;">
-        <label for="image-upload" style="cursor: pointer; display: inline-block; padding: 10px 15px; background: var(--primary-color); color: white; border-radius: var(--border-radius); transition: all 0.3s ease;">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            点击上传图片
-        </label>
-        <div class="info-text">上传图片后立即处理，如果否请刷新重新上传！</div>
-        <div id="status" class="status"></div>
+    <div class="upload-area" id="uploadContainer">
+        <div>点击或拖放图片</div>
+        <input type="file" id="imageUpload" accept="image/*">
     </div>
     
-    <img id="original-image" alt="原始图片">
-    
-    <div id="grid-container" class="grid-container"></div>
-    
-    <div class="button-group">
-        <button id="invert-btn" class="invert" disabled>
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-            </svg>
-            生成反差色版本
-        </button>
-        <button id="download-all" class="download" disabled>
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            下载全部分割图
-        </button>
+    <div id="previewSection" style="display:none;">
+        <img id="originalImage" alt="原始图片">
+        <div class="pixel-size">
+            <span>显示大小:</span>
+            <input type="number" id="pixelSize" min="1" max="10" value="3">
+        </div>
+        <div class="controls">
+            <button id="splitBtn">分解图片</button>
+            <button id="resetBtn">重置</button>
+        </div>
+        <div class="processing" id="processingSplit" style="display:none;">处理中...</div>
     </div>
     
-    <div class="preview-container">
-        <div class="preview-title">反差色效果预览</div>
-        <img id="inverted-preview" alt="反差色预览">
+    <div id="tilesSection" style="display:none;">
+        <div class="tiles-container" id="tilesContainer"></div>
+        <div class="controls">
+            <button id="overlayBtn">叠加查看</button>
+            <button id="downloadBtn">下载所有</button>
+        </div>
+        <div class="processing" id="processingOverlay" style="display:none;">处理中...</div>
     </div>
     
+    <div id="combinedSection" style="display:none;">
+        <div class="combined-container" id="combinedContainer"></div>
+    </div>
+
     <script>
-        // 配置
-        const PART_COUNT = 9;      // 分割图数量
-        const BLOCK_SIZE = 16;     // 固定像素块大小(16x16)
-        const RANDOMNESS = 10;     // 固定随机程度(最高)
+        let originalImage = null;
+        let tiles = [];
+        let originalWidth = 0;
+        let originalHeight = 0;
         
-        // 获取DOM元素
-        const upload = document.getElementById('image-upload');
-        const originalImage = document.getElementById('original-image');
-        const gridContainer = document.getElementById('grid-container');
-        const invertBtn = document.getElementById('invert-btn');
-        const downloadBtn = document.getElementById('download-all');
-        const invertedPreview = document.getElementById('inverted-preview');
-        const statusEl = document.getElementById('status');
+        // DOM元素
+        const uploadContainer = document.getElementById('uploadContainer');
+        const imageUpload = document.getElementById('imageUpload');
+        const previewSection = document.getElementById('previewSection');
+        const originalImageElement = document.getElementById('originalImage');
+        const splitBtn = document.getElementById('splitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const tilesSection = document.getElementById('tilesSection');
+        const tilesContainer = document.getElementById('tilesContainer');
+        const combinedSection = document.getElementById('combinedSection');
+        const combinedContainer = document.getElementById('combinedContainer');
+        const overlayBtn = document.getElementById('overlayBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const pixelSizeInput = document.getElementById('pixelSize');
+        const processingSplit = document.getElementById('processingSplit');
+        const processingOverlay = document.getElementById('processingOverlay');
         
-        let state = {
-            originalImageData: null,
-            splitImages: [],
-            invertedSplitImages: [], // 存储反差色分割图
-            width: 0,
-            height: 0,
-            pixelMap: null,
-            isInverted: false       // 当前是否为反差色模式
-        };
+        // 拖放功能
+        uploadContainer.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadContainer.style.borderColor = '#4285f4';
+        });
         
-        // 初始化事件监听
-        upload.addEventListener('change', handleImageUpload);
-        invertBtn.addEventListener('click', toggleInvertedVersion);
-        downloadBtn.addEventListener('click', downloadAllImages);
+        uploadContainer.addEventListener('dragleave', () => {
+            uploadContainer.style.borderColor = '#ccc';
+        });
         
-        // 更新状态显示
-        function updateStatus(message) {
-            statusEl.textContent = message;
-            setTimeout(() => {
-                if (statusEl.textContent === message) {
-                    statusEl.textContent = '';
-                }
-            }, 3000);
-        }
+        uploadContainer.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadContainer.style.borderColor = '#ccc';
+            if (e.dataTransfer.files.length) {
+                imageUpload.files = e.dataTransfer.files;
+                handleImageUpload({ target: imageUpload });
+            }
+        });
+        
+        // 事件监听
+        uploadContainer.addEventListener('click', () => imageUpload.click());
+        imageUpload.addEventListener('change', handleImageUpload);
+        splitBtn.addEventListener('click', splitImage);
+        resetBtn.addEventListener('click', resetAll);
+        overlayBtn.addEventListener('click', overlayTiles);
+        downloadBtn.addEventListener('click', downloadTiles);
         
         // 处理图片上传
         function handleImageUpload(e) {
-            if (e.target.files && e.target.files[0]) {
-                updateStatus("正在处理图片...");
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                originalImageElement.src = event.target.result;
+                previewSection.style.display = 'block';
                 
-                const reader = new FileReader();
-                
-                reader.onload = function(event) {
-                    originalImage.src = event.target.result;
-                    originalImage.style.display = 'block';
-                    
-                    // 处理图片
-                    processImage();
+                originalImage = new Image();
+                originalImage.onload = function() {
+                    originalWidth = this.width;
+                    originalHeight = this.height;
                 };
-                
-                reader.onerror = function() {
-                    updateStatus("图片加载失败，请重试");
-                };
-                
-                reader.readAsDataURL(e.target.files[0]);
-            }
+                originalImage.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         }
         
-        // 处理图片
-        function processImage() {
-            const img = new Image();
+        // 分解图片
+        function splitImage() {
+            if (!originalImage) return;
             
-            img.onload = function() {
+            const pixelSize = parseInt(pixelSizeInput.value) || 3;
+            
+            // 显示处理中提示
+            processingSplit.style.display = 'block';
+            splitBtn.disabled = true;
+            
+            // 使用setTimeout让UI有机会更新
+            setTimeout(() => {
+                // 创建工作canvas
                 const canvas = document.createElement('canvas');
+                canvas.width = originalWidth;
+                canvas.height = originalHeight;
                 const ctx = canvas.getContext('2d');
-                
-                // 设置画布大小
-                state.width = canvas.width = img.width;
-                state.height = canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(originalImage, 0, 0, originalWidth, originalHeight);
                 
                 // 获取图像数据
-                state.originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const imageData = ctx.getImageData(0, 0, originalWidth, originalHeight);
+                const data = imageData.data;
                 
-                // 清空之前的结果
-                gridContainer.innerHTML = '';
-                state.splitImages = [];
-                state.invertedSplitImages = [];
-                state.isInverted = false;
-                invertedPreview.style.display = 'none';
-                invertBtn.disabled = false;
-                downloadBtn.disabled = false;
+                // 清空容器
+                tilesContainer.innerHTML = '';
+                tiles = [];
                 
-                // 初始化像素分配记录
-                state.pixelMap = new Array(state.width * state.height);
-                for (let i = 0; i < state.pixelMap.length; i++) {
-                    state.pixelMap[i] = -1; // -1表示未分配
-                }
-                
-                // 计算水平和垂直方向能容纳的块数
-                const blocksWide = Math.ceil(state.width / BLOCK_SIZE);
-                const blocksHigh = Math.ceil(state.height / BLOCK_SIZE);
+                // 计算总像素块数
+                const blocksWide = Math.ceil(originalWidth / pixelSize);
+                const blocksHigh = Math.ceil(originalHeight / pixelSize);
                 const totalBlocks = blocksWide * blocksHigh;
                 
-                // 创建所有块位置的数组并随机排序
-                const allBlockPositions = [];
-                for (let by = 0; by < blocksHigh; by++) {
-                    for (let bx = 0; bx < blocksWide; bx++) {
-                        allBlockPositions.push({bx, by});
-                    }
+                // 创建像素块索引数组并打乱顺序
+                const blockIndices = [];
+                for (let i = 0; i < totalBlocks; i++) {
+                    blockIndices.push(i);
                 }
+                shuffleArray(blockIndices);
                 
-                // 多重随机打乱以增强随机性
-                for (let i = 0; i < RANDOMNESS; i++) {
-                    shuffleArray(allBlockPositions);
-                }
+                // 计算每张图片分配的像素块数
+                const blocksPerImage = Math.ceil(totalBlocks / 9);
                 
-                // 创建分割图像
-                for (let partIndex = 0; partIndex < PART_COUNT; partIndex++) {
-                    // 创建正常和反差色的图像数据
-                    const imageData = new ImageData(state.width, state.height);
-                    const invertedImageData = new ImageData(state.width, state.height);
-                    const data = imageData.data;
-                    const invertedData = invertedImageData.data;
+                // 创建9张分解图
+                for (let i = 0; i < 9; i++) {
+                    const tileCanvas = document.createElement('canvas');
+                    tileCanvas.width = originalWidth;
+                    tileCanvas.height = originalHeight;
+                    const tileCtx = tileCanvas.getContext('2d');
                     
-                    // 初始化全透明
-                    for (let j = 0; j < data.length; j++) {
-                        data[j] = 0;
-                        invertedData[j] = 0;
-                    }
+                    // 创建透明背景
+                    tileCtx.fillStyle = 'rgba(0,0,0,0)';
+                    tileCtx.fillRect(0, 0, originalWidth, originalHeight);
                     
-                    // 计算这个分割图应该包含的块数量
-                    const blocksPerPart = Math.ceil(totalBlocks / PART_COUNT);
-                    let blocksAssigned = 0;
+                    // 分配像素块给这张图
+                    const startIdx = i * blocksPerImage;
+                    const endIdx = Math.min(startIdx + blocksPerImage, blockIndices.length);
                     
-                    // 分配块到这个分割图
-                    for (let i = 0; i < allBlockPositions.length && blocksAssigned < blocksPerPart; i++) {
-                        const {bx, by} = allBlockPositions[i];
-                        const blockIndex = by * blocksWide + bx;
+                    for (let j = startIdx; j < endIdx; j++) {
+                        const blockIdx = blockIndices[j];
+                        const blockX = (blockIdx % blocksWide) * pixelSize;
+                        const blockY = Math.floor(blockIdx / blocksWide) * pixelSize;
                         
-                        // 如果这个块还没有被分配
-                        if (state.pixelMap[blockIndex] === -1) {
-                            // 计算块的起始像素位置
-                            const startX = bx * BLOCK_SIZE;
-                            const startY = by * BLOCK_SIZE;
-                            
-                            // 复制这个块的所有像素
-                            for (let y = 0; y < BLOCK_SIZE; y++) {
-                                for (let x = 0; x < BLOCK_SIZE; x++) {
-                                    const px = startX + x;
-                                    const py = startY + y;
+                        // 复制像素块
+                        for (let y = 0; y < pixelSize; y++) {
+                            for (let x = 0; x < pixelSize; x++) {
+                                const origX = blockX + x;
+                                const origY = blockY + y;
+                                
+                                if (origX < originalWidth && origY < originalHeight) {
+                                    const origPos = (origY * originalWidth + origX) * 4;
                                     
-                                    if (px < state.width && py < state.height) {
-                                        const srcPos = (py * state.width + px) * 4;
-                                        const destPos = srcPos;
-                                        
-                                        // 正常像素
-                                        data[destPos] = state.originalImageData.data[srcPos];
-                                        data[destPos + 1] = state.originalImageData.data[srcPos + 1];
-                                        data[destPos + 2] = state.originalImageData.data[srcPos + 2];
-                                        data[destPos + 3] = state.originalImageData.data[srcPos + 3];
-                                        
-                                        // 反差色像素
-                                        invertedData[destPos] = 255 - state.originalImageData.data[srcPos];
-                                        invertedData[destPos + 1] = 255 - state.originalImageData.data[srcPos + 1];
-                                        invertedData[destPos + 2] = 255 - state.originalImageData.data[srcPos + 2];
-                                        invertedData[destPos + 3] = state.originalImageData.data[srcPos + 3];
+                                    // 只复制不透明像素
+                                    if (data[origPos + 3] > 0) {
+                                        tileCtx.fillStyle = `rgba(${data[origPos]}, ${data[origPos + 1]}, ${data[origPos + 2]}, ${data[origPos + 3] / 255})`;
+                                        tileCtx.fillRect(origX, origY, 1, 1);
                                     }
                                 }
                             }
-                            
-                            // 记录这个块被分配到当前分割图
-                            state.pixelMap[blockIndex] = partIndex;
-                            blocksAssigned++;
                         }
                     }
                     
-                    // 保存分割图像
-                    ctx.putImageData(imageData, 0, 0);
-                    state.splitImages.push(imageData);
-                    state.invertedSplitImages.push(invertedImageData);
+                    // 创建并显示分解图
+                    const tileImg = document.createElement('img');
+                    tileImg.src = tileCanvas.toDataURL();
                     
-                    // 创建缩略图显示（默认显示正常版本）
-                    createThumbnail(canvas, partIndex + 1, false);
+                    const tileDiv = document.createElement('div');
+                    tileDiv.className = 'tile';
+                    tileDiv.appendChild(tileImg);
+                    tilesContainer.appendChild(tileDiv);
+                    
+                    tiles.push(tileCanvas);
                 }
                 
-                // 显示网格
-                gridContainer.style.display = 'grid';
-                updateStatus("图片处理完成！");
+                // 隐藏处理中提示
+                processingSplit.style.display = 'none';
+                splitBtn.disabled = false;
                 
-                // 生成并显示反差色预览
-                generateInvertedPreview();
-            };
-            
-            img.onerror = function() {
-                updateStatus("图片加载失败，请重试");
-            };
-            
-            img.src = originalImage.src;
+                tilesSection.style.display = 'block';
+                combinedSection.style.display = 'block';
+            }, 100);
         }
         
-        // 切换反差色版本
-        function toggleInvertedVersion() {
-            state.isInverted = !state.isInverted;
+        // 叠加所有分解图
+        function overlayTiles() {
+            if (tiles.length !== 9) return;
             
-            // 清空网格
-            gridContainer.innerHTML = '';
+            // 显示处理中提示
+            processingOverlay.style.display = 'block';
+            overlayBtn.disabled = true;
             
-            // 重新创建缩略图
-            const canvas = document.createElement('canvas');
-            canvas.width = state.width;
-            canvas.height = state.height;
-            const ctx = canvas.getContext('2d');
-            
-            for (let i = 0; i < PART_COUNT; i++) {
-                if (state.isInverted) {
-                    ctx.putImageData(state.invertedSplitImages[i], 0, 0);
-                } else {
-                    ctx.putImageData(state.splitImages[i], 0, 0);
-                }
-                createThumbnail(canvas, i + 1, state.isInverted);
-            }
-            
-            // 更新按钮文本
-            invertBtn.innerHTML = `
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-                ${state.isInverted ? '恢复原始版本' : '生成反差色版本'}
-            `;
-            
-            updateStatus(`已切换到${state.isInverted ? '反差色' : '原始'}版本`);
+            // 使用setTimeout让UI有机会更新
+            setTimeout(() => {
+                const resultCanvas = document.createElement('canvas');
+                resultCanvas.width = originalWidth;
+                resultCanvas.height = originalHeight;
+                const resultCtx = resultCanvas.getContext('2d');
+                
+                // 先绘制白色背景
+                resultCtx.fillStyle = 'white';
+                resultCtx.fillRect(0, 0, originalWidth, originalHeight);
+                
+                // 叠加所有分解图
+                tiles.forEach(tile => {
+                    resultCtx.drawImage(tile, 0, 0);
+                });
+                
+                // 显示叠加结果
+                combinedContainer.innerHTML = '';
+                const resultImg = document.createElement('img');
+                resultImg.src = resultCanvas.toDataURL();
+                combinedContainer.appendChild(resultImg);
+                
+                // 隐藏处理中提示
+                processingOverlay.style.display = 'none';
+                overlayBtn.disabled = false;
+            }, 100);
         }
         
-        // 生成反差色预览
-        function generateInvertedPreview() {
-            const canvas = document.createElement('canvas');
-            canvas.width = state.width;
-            canvas.height = state.height;
-            const ctx = canvas.getContext('2d');
+        // 下载所有分解图
+        function downloadTiles() {
+            if (tiles.length === 0) return;
             
-            // 创建反差色图像数据
-            const invertedImageData = new ImageData(state.width, state.height);
-            const invertedData = invertedImageData.data;
-            const originalData = state.originalImageData.data;
+            const zip = new JSZip();
+            const imgFolder = zip.folder("pixel_tiles");
             
-            // 生成反差色图像
-            for (let i = 0; i < originalData.length; i += 4) {
-                invertedData[i] = 255 - originalData[i];     // R
-                invertedData[i + 1] = 255 - originalData[i + 1]; // G
-                invertedData[i + 2] = 255 - originalData[i + 2]; // B
-                invertedData[i + 3] = originalData[i + 3];   // A
-            }
+            tiles.forEach((tile, index) => {
+                const dataUrl = tile.toDataURL('image/png');
+                const base64Data = dataUrl.split(',')[1];
+                imgFolder.file(`tile_${index + 1}.png`, base64Data, { base64: true });
+            });
             
-            // 绘制反差色图像
-            ctx.putImageData(invertedImageData, 0, 0);
-            invertedPreview.src = canvas.toDataURL('image/png');
-            invertedPreview.style.display = 'block';
+            zip.generateAsync({ type: 'blob' }).then(function(content) {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = 'pixel_tiles.zip';
+                link.click();
+            });
         }
         
-        // 随机打乱数组
+        // 重置所有
+        function resetAll() {
+            originalImage = null;
+            tiles = [];
+            previewSection.style.display = 'none';
+            tilesSection.style.display = 'none';
+            combinedSection.style.display = 'none';
+            imageUpload.value = '';
+            tilesContainer.innerHTML = '';
+            combinedContainer.innerHTML = '';
+            pixelSizeInput.value = 3;
+            processingSplit.style.display = 'none';
+            processingOverlay.style.display = 'none';
+            splitBtn.disabled = false;
+            overlayBtn.disabled = false;
+        }
+        
+        // 打乱数组顺序
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -562,83 +383,8 @@
             }
             return array;
         }
-        
-        // 创建缩略图
-        function createThumbnail(sourceCanvas, partNumber, isInverted) {
-            const thumbCanvas = document.createElement('canvas');
-            const thumbSize = 200;
-            thumbCanvas.width = thumbSize;
-            thumbCanvas.height = thumbSize * (sourceCanvas.height / sourceCanvas.width);
-            const thumbCtx = thumbCanvas.getContext('2d');
-            
-            thumbCtx.drawImage(sourceCanvas, 0, 0, thumbCanvas.width, thumbCanvas.height);
-            
-            // 创建网格项并添加到容器
-            const gridItem = document.createElement('div');
-            gridItem.className = 'grid-item';
-            gridItem.dataset.part = `部分 ${partNumber}${isInverted ? ' (反差色)' : ''}`;
-            
-            const partImg = document.createElement('img');
-            partImg.src = thumbCanvas.toDataURL('image/png');
-            
-            gridItem.appendChild(partImg);
-            gridContainer.appendChild(gridItem);
-        }
-        
-        // 下载所有分割图片
-        function downloadAllImages() {
-            if (state.splitImages.length === 0) return;
-            
-            updateStatus("正在准备下载...");
-            
-            // 创建一个临时zip文件
-            const zip = new JSZip();
-            const folderName = state.isInverted ? "inverted_pixel_parts" : "pixel_parts";
-            const imgFolder = zip.folder(folderName);
-            
-            // 添加所有分割图到zip
-            const imagesToDownload = state.isInverted ? state.invertedSplitImages : state.splitImages;
-            
-            imagesToDownload.forEach((imageData, index) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = state.width;
-                canvas.height = state.height;
-                const ctx = canvas.getContext('2d');
-                ctx.putImageData(imageData, 0, 0);
-                
-                const dataUrl = canvas.toDataURL('image/png');
-                const base64Data = dataUrl.split(',')[1];
-                imgFolder.file(`${folderName}_${index + 1}.png`, base64Data, {base64: true});
-            });
-            
-            // 生成zip文件并下载
-            zip.generateAsync({type: "blob"})
-                .then(function(content) {
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(content);
-                    link.download = `${folderName}.zip`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    updateStatus("下载已开始！");
-                })
-                .catch(function(error) {
-                    updateStatus("下载失败，请重试");
-                    console.error("下载错误:", error);
-                });
-        }
-        
-        // 检测移动设备
-        function isMobileDevice() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        }
-        
-        // 初始化移动设备特定设置
-        if (isMobileDevice()) {
-            document.body.classList.add('mobile-device');
-        }
     </script>
-    <!-- 引入JSZip库用于打包下载 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </body>
 </html>
